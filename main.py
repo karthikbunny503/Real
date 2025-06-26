@@ -3,10 +3,10 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Callb
 from flask import Flask
 from threading import Thread
 
-# Your Telegram user ID
+# Admin Telegram ID (your ID)
 ADMIN_ID = 6316000882
 
-# Flask keep-alive server for UptimeRobot
+# Flask app for UptimeRobot keep-alive
 app = Flask('')
 
 @app.route('/')
@@ -16,9 +16,10 @@ def home():
 def run_web():
     app.run(host='0.0.0.0', port=8080)
 
+# Start the Flask server
 Thread(target=run_web).start()
 
-# Start command
+# Start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🔐 CraxsRat v7.6", callback_data='cr76')],
@@ -37,7 +38,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Use /start to view available tools.")
 
-# Button click handler
+# Button handler
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -53,25 +54,26 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
     await query.edit_message_text(text=responses.get(query.data, "❓ Unknown selection."))
 
-# Message handler
+# Forward all user messages to you (admin)
 async def log_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     msg = update.message.text or "[non-text message]"
     log = f"📩 Message from {user.first_name or 'Unknown'} (@{user.username}):\n{msg}"
-
-    await update.message.reply_text("✅ Message received. We'll check and reply if needed.")
+    
+    await update.message.reply_text("✅ Message received. We'll check and reply soon.")
     try:
         await context.bot.send_message(chat_id=ADMIN_ID, text=log)
     except Exception as e:
-        print(f"❌ Could not forward to admin: {e}")
+        print(f"❌ Error forwarding to admin: {e}")
 
-# Bot token
+# Your Telegram bot token
 BOT_TOKEN = "7240109367:AAGwjfe50INaMIGiEEaJ-Sy22HiL80rA4mU"
 
-# Build and run the bot
+# Build and start the bot
 app_bot = ApplicationBuilder().token(BOT_TOKEN).build()
 app_bot.add_handler(CommandHandler("start", start))
 app_bot.add_handler(CommandHandler("help", help_command))
 app_bot.add_handler(CallbackQueryHandler(button_handler))
 app_bot.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, log_user_message))
+
 app_bot.run_polling()
