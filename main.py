@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 
-# Your Telegram user ID
+# Your Telegram user ID (to receive forwarded messages)
 ADMIN_ID = 6316000882
 
 # /start command
@@ -50,10 +50,10 @@ async def log_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("✅ Message received. We'll check and reply if needed.")
     await context.bot.send_message(chat_id=ADMIN_ID, text=log)
 
-# ✅ Your bot token
-BOT_TOKEN = "7240109367:AAG5t8rksmX911DGQYJuFH88SceyL9vIM3Q"
+# ✅ Your updated bot token
+BOT_TOKEN = "7240109367:AAHN-WwH8bsSB2_jkg8FuGPhupVckIfzLf0"
 
-# Build the bot app
+# Build and run the bot
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("help", help_command))
