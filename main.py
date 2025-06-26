@@ -51,7 +51,7 @@ async def log_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=ADMIN_ID, text=log)
 
 # ✅ Your updated bot token
-BOT_TOKEN = "7240109367:AAHN-WwH8bsSB2_jkg8FuGPhupVckIfzLf0"
+BOT_TOKEN = "7240109367:AAGwjfe50INaMIGiEEaJ-Sy22HiL80rA4mU"
 
 # Build and run the bot
 app = ApplicationBuilder().token(BOT_TOKEN).build()
