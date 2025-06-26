@@ -1,6 +1,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 
+# Your Telegram user ID
+ADMIN_ID = 6316000882
+
 # /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
@@ -20,7 +23,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Use /start to see tools with buttons.\nYou can also send me any message.")
 
-# Handle button press
+# Button press handler
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -38,17 +41,19 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await query.edit_message_text(text=responses.get(query.data, "❓ Unknown selection."))
 
-# Log user messages
+# Log and forward messages
 async def log_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    text = update.message.text
-    print(f"📥 Message from {user.first_name} (@{user.username}): {text}")
-    await update.message.reply_text("✅ Message received. We'll get back to you.")
+    msg = update.message.text or "[non-text message]"
+    log = f"📩 Message from {user.first_name or 'Unknown'} (@{user.username}):\n{msg}"
 
-# ✅ Your real bot token
+    await update.message.reply_text("✅ Message received. We'll check and reply if needed.")
+    await context.bot.send_message(chat_id=ADMIN_ID, text=log)
+
+# ✅ Your bot token
 BOT_TOKEN = "7240109367:AAG5t8rksmX911DGQYJuFH88SceyL9vIM3Q"
 
-# Build and run bot
+# Build the bot
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("help", help_command))
