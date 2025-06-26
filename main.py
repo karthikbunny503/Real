@@ -23,7 +23,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Use /start to see tools with buttons.\nYou can also send me any message.")
 
-# Button press handler
+# Button click handler
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -41,7 +41,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await query.edit_message_text(text=responses.get(query.data, "❓ Unknown selection."))
 
-# Log and forward messages
+# Message logger & forwarder
 async def log_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     msg = update.message.text or "[non-text message]"
@@ -53,7 +53,7 @@ async def log_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ✅ Your bot token
 BOT_TOKEN = "7240109367:AAG5t8rksmX911DGQYJuFH88SceyL9vIM3Q"
 
-# Build the bot
+# Build the bot app
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("help", help_command))
