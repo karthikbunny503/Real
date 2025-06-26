@@ -1,79 +1,44 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
-from flask import Flask
-from threading import Thread
+from flask import Flask, request
+from telegram import Bot, Update
+from telegram.ext import Dispatcher, CommandHandler, MessageHandler, Filters
+import os
 
-# Admin Telegram ID (your ID)
-ADMIN_ID = 6316000882
+# ✅ Get token securely from environment
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+bot = Bot(token=TOKEN)
 
-# Flask app for UptimeRobot keep-alive
-app = Flask('')
+app = Flask(__name__)
+dispatcher = Dispatcher(bot, None, workers=0)
+
+# 🟢 Handle /start command
+def start(update, context):
+    update.message.reply_text("Hello! Please send me RAT name to get details.")
+
+# 🟢 Handle any text message
+def echo(update, context):
+    update.message.reply_text("👋 You said: " + update.message.text)
+
+# Register handlers
+dispatcher.add_handler(CommandHandler("start", start))
+dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
 
 @app.route('/')
 def home():
-    return "Bot is alive!"
+    return "🤖 Bot is running!"
 
-def run_web():
-    app.run(host='0.0.0.0', port=8080)
+# 🔗 Telegram webhook endpoint
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    update = Update.de_json(request.get_json(force=True), bot)
+    dispatcher.process_update(update)
+    return "ok"
 
-# Start the Flask server
-Thread(target=run_web).start()
+# 🌐 Set webhook manually
+@app.route('/setwebhook')
+def set_webhook():
+    webhook_url = 'https://your-app-name.onrender.com/webhook'  # Replace with your live Render URL
+    success = bot.set_webhook(url=webhook_url)
+    return f"Webhook set: {success}"
 
-# Start command handler
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("🔐 CraxsRat v7.6", callback_data='cr76')],
-        [InlineKeyboardButton("🛡️ EagleSpy V4", callback_data='esv4')],
-        [InlineKeyboardButton("🛡️ EagleSpy V5", callback_data='esv5')],
-        [InlineKeyboardButton("🔐 CraxsRat v7.4", callback_data='cr74')],
-        [InlineKeyboardButton("📦 More Tools", callback_data='more')],
-        [InlineKeyboardButton("🧠 SpyX v3.1", callback_data='spyx')],
-        [InlineKeyboardButton("🧰 GhostWare Pro", callback_data='ghost')],
-        [InlineKeyboardButton("📲 AndroidHackKit", callback_data='ahk')],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("🔰 Choose a tool:", reply_markup=reply_markup)
-
-# Help command
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Use /start to view available tools.")
-
-# Button handler
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    responses = {
-        'cr76': "✅ You selected: CraxsRat v7.6",
-        'esv4': "✅ You selected: EagleSpy V4",
-        'esv5': "✅ You selected: EagleSpy V5",
-        'cr74': "✅ You selected: CraxsRat v7.4",
-        'more': "🔧 More tools coming soon...",
-        'spyx': "🧠 You selected: SpyX v3.1",
-        'ghost': "🧰 You selected: GhostWare Pro",
-        'ahk': "📲 You selected: AndroidHackKit"
-    }
-    await query.edit_message_text(text=responses.get(query.data, "❓ Unknown selection."))
-
-# Forward all user messages to you (admin)
-async def log_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    msg = update.message.text or "[non-text message]"
-    log = f"📩 Message from {user.first_name or 'Unknown'} (@{user.username}):\n{msg}"
-    
-    await update.message.reply_text("✅ Message received. We'll check and reply soon.")
-    try:
-        await context.bot.send_message(chat_id=ADMIN_ID, text=log)
-    except Exception as e:
-        print(f"❌ Error forwarding to admin: {e}")
-
-# Your Telegram bot token
-BOT_TOKEN = "7240109367:AAGwjfe50INaMIGiEEaJ-Sy22HiL80rA4mU"
-
-# Build and start the bot
-app_bot = ApplicationBuilder().token(BOT_TOKEN).build()
-app_bot.add_handler(CommandHandler("start", start))
-app_bot.add_handler(CommandHandler("help", help_command))
-app_bot.add_handler(CallbackQueryHandler(button_handler))
-app_bot.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, log_user_message))
-
-app_bot.run_polling()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
